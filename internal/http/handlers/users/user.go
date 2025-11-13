@@ -81,3 +81,17 @@ func GetUserById(storage storage.Storage) http.HandlerFunc {
 		response.WriteJSON(w, http.StatusOK, user)
 	}
 }
+
+func GetUserList(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("getting all users")
+
+		users, err := storage.GetUsers()
+		if err != nil {
+			response.WriteJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		response.WriteJSON(w, http.StatusOK, users)
+	} 
+}	

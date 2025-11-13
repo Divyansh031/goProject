@@ -76,3 +76,35 @@ func (s *Sqlite) GetUserById(id int64) (types.User, error) {
 
 	return user, nil
 }
+
+
+func (s *Sqlite) GetUsers() ([]types.User, error) {
+	stmt, err := s.Db.Prepare("SELECT id, name, email, age FROM users")
+	if err != nil {
+		return nil, err
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var users []types.User
+
+	for rows.Next() {
+		var user types.User
+
+		err := rows.Scan(&user.Id, &user.Name, &user.Email, &user.Age)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}
