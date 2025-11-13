@@ -11,7 +11,8 @@ import (
 	"time"
 
 	"github.com/Divyansh031/goProject/internal/config"
-	user "github.com/Divyansh031/goProject/internal/http/handlers/users"
+	"github.com/Divyansh031/goProject/internal/http/handlers/users"
+	"github.com/Divyansh031/goProject/internal/storage/sqlite"
 )
 
 func main() {
@@ -19,11 +20,20 @@ func main() {
 	cfg  := config.MustLoad()
 
 	//database setup
+	storage, err := sqlite.New(cfg)
+	if err != nil {
+		log.Fatal("Failed to initialize storage:", err)
+	}
+
+	slog.Info("Storage initialized successfully", slog.String("env", cfg.Env))
+
+
+
 
 	//router setup
 	router := http.NewServeMux()
 
-	router.HandleFunc("POST /api/users", user.New())
+	router.HandleFunc("POST /api/users", user.New(storage))
 
 
 	// server setup
@@ -89,10 +99,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 	defer cancel()
 
-	err := server.Shutdown(ctx)
-	if err != nil{
-		slog.Error("Failed to shutdown server", slog.String("error", err.Error()))
-		
+	if err := server.Shutdown(ctx); err != nil {
+		slog.Error("failed to shutdown server", slog.String("error", err.Error()))
 	}
 
 	slog.Info("Server shutdown successfully")
