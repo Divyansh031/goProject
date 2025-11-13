@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Divyansh031/goProject/internal/config"
+	user "github.com/Divyansh031/goProject/internal/http/handlers/users"
 )
 
 func main() {
@@ -22,9 +23,7 @@ func main() {
 	//router setup
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to users-api!"))
-	})
+	router.HandleFunc("POST /api/users", user.New())
 
 
 	// server setup
@@ -48,8 +47,42 @@ func main() {
 
 	}()
 	
+    
+
+//    **What this does:**
+// Start the server in a **separate goroutine** (background thread).
+
+// **Why goroutine?**
+// Because `server.ListenAndServe()` BLOCKS (waits forever, handling requests). If we didn't use `go`, the program would be stuck here and never reach the next line!
+// ```
+// Main Goroutine                    Server Goroutine
+//       ↓                                  ↓
+//   Start server in background    → Actually runs server
+//       ↓                              (handles requests)
+//   Keep going...
+//       ↓
+//   Wait for shutdown signal
+
 
 	<- done  // wait for interrupt signal
+
+
+
+// 	**THIS IS THE KEY LINE!**
+
+// The program **BLOCKS HERE** and waits. It won't continue until something is sent to the `done` channel.
+
+// **When does something get sent?**
+// When you press **Ctrl+C**! The OS sends a signal to the channel.
+// ```
+// Program running...
+// User presses Ctrl+C
+//    ↓
+// Signal sent to 'done' channel
+//    ↓
+// <- done receives the signal
+//    ↓
+// Program continues to shutdown code
     
 	slog.Info("Shutting down the server") // Logging
 	
